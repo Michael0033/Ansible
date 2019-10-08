@@ -1,0 +1,9 @@
+\!/ Script incomplet \!/
+
+- Dans le fichier hosts, mettre le nom de la machine à analyser
+
+- Pour lancer l'analyse : 
+ansible-playbook -i hosts playbooks/analyse.yml
+
+- Le resultat se trouve dans le dossier result
+

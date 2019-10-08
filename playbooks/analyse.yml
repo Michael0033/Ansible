@@ -1,0 +1,114 @@
+---
+- hosts: clients
+  become: true
+  become_user: root
+
+  tasks:
+  - name: Get server hostname
+    command: hostname
+    register: hostname
+    tags: hostname
+  - name: Get server release
+    command: lsb_release -sd
+    register: release
+    tags: release
+  - name: Get number of CPU
+    command: nproc
+    register: nproc
+    tags: nproc
+  - name: Get disk informations
+    shell: "lsblk -l | grep disk | awk '{print $4}'"
+    register: disk
+    tags: disk
+  - name: Check if php is installed
+    shell: 'dpkg -l | grep php'
+    failed_when: false
+    register: php
+    tags: php
+  - name: Return php
+    shell: 'php -v | head -n 1'
+    register: return_php
+    tags: return_php
+  - name: Check if nginx is installed
+    shell: 'dpkg -l | grep nginx-full'
+    failed_when: false
+    register: nginx
+    tags: nginx
+  - name: Return nginx
+    shell: 'nginx -v'
+    register: return_nginx
+    tags: return_nginx
+  - name: Check if apache is installed
+    shell: 'dpkg -l | grep apache2'
+    failed_when: false
+    register: apache
+    tags: apache
+  - name: Return apache
+    shell: 'apache2ctl -v | head -n 1'
+    register: return_apache
+  - name: Check if varnish is installed
+    shell: 'dpkg -l | grep varnish'
+    failed_when: false
+    register: varnish
+    tags: varnish
+  - name: Return varnish
+    shell: 'varnishd -V | head -n 1'
+    register: return_varnish
+  - name: Get ram total 
+    shell : "free -h | head -n 2 | awk '{print $2}' | grep G"
+    register: ram_total
+    tags: ram_total
+  - name: Get ram used 
+    shell : "free -h | head -n 2 | awk '{print $3}' | grep M"
+    register: ram_used
+    tags: ram_used
+  - name: Get ram available
+    shell : "free -m | head -n 2 | awk '{print $4}' | grep -Eo '[0-9]{1,4}'"
+    register: ram_available
+    tags: ram_available
+  - name: Write into file
+    lineinfile:
+      dest: '/home/admoxa/{{ hostname.stdout}}'
+      create: yes
+      line: '{{ item.line }}'
+    with_items:
+            - { line: "\n---------------GLOBAL---------------" }
+            - { line: "Server : {{hostname.stdout}}" }
+            - { line: "\nRelease informations : {{release.stdout}}" }
+            - { line: "\n---------------CPU------------------" }
+            - { line: "\nNumber of CPU(s) : {{nproc.stdout}}" }
+            - { line: "\n---------------DISK-----------------" }
+            - { line: "\nList of hard disks : \n{{disk.stdout}}" }
+            - { line: "\n---------------RAM------------------" }
+            - { line: "\nTotal RAM : {{ram_total.stdout}}" }
+            - { line: "\nUsed RAM : {{ram_used.stdout}}" }
+            - { line: "\nAvailable RAM : {{ram_available.stdout}}M" }
+  - name: Write php
+    lineinfile:
+      dest: '/home/admoxa/{{ hostname.stdout}}'
+      line: "\n--------------PHP------------------\nPHP Version : {{ return_php.stdout}}"
+    when: php.stdout != ""
+  - name: Write nginx
+    lineinfile:
+      dest: '/home/admoxa/{{ hostname.stdout}}'
+      line: "\n--------------NGINX------------------\nNGINX Version : {{ return_nginx.stderr}}"
+    when: nginx.stdout != ""
+  - name: Write apache
+    lineinfile:
+      dest: '/home/admoxa/{{ hostname.stdout}}'
+      line: "\n--------------APACHE------------------\nAPACHE Version : {{ return_apache.stdout}}"
+    when: apache.stdout != ""
+  - name: Write varnish
+    lineinfile:
+      dest: '/home/admoxa/{{ hostname.stdout}}'
+      line: "\n--------------VARNISH------------------\nVARNISH Version : {{ return_varnish.stderr}}"
+    when: varnish.stdout != ""
+  - name: Copy file
+    fetch:
+      src: '/home/admoxa/{{ hostname.stdout}}'
+      dest: '/space/home/mbesnainou/ansible/result/{{ hostname.stdout}}'
+      flat: yes
+  - name: Remove source file
+    file:
+      state: absent
+      path: '/home/admoxa/{{ hostname.stdout}}'
