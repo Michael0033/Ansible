@@ -34,10 +34,10 @@
     failed_when: false
     register: nginx
     tags: nginx
-  - name: Return nginx
-    shell: 'nginx -v'
-    register: return_nginx
-    tags: return_nginx
+#  - name: Return nginx
+#    shell: 'nginx -v'
+#    register: return_nginx
+#    tags: return_nginx
   - name: Check if apache is installed
     shell: 'dpkg -l | grep apache2'
     failed_when: false
@@ -58,10 +58,10 @@
     shell : "free -h | head -n 2 | awk '{print $2}' | grep G"
     register: ram_total
     tags: ram_total
-  - name: Get ram used 
-    shell : "free -h | head -n 2 | awk '{print $3}' | grep M"
-    register: ram_used
-    tags: ram_used
+#  - name: Get ram used 
+#    shell : "free -h | head -n 2 | awk '{print $3}' | grep M"
+#    register: ram_used
+#    tags: ram_used
   - name: Get ram available
     shell : "free -m | head -n 2 | awk '{print $4}' | grep -Eo '[0-9]{1,4}'"
     register: ram_available
@@ -81,7 +81,7 @@
             - { line: "\nList of hard disks : \n{{disk.stdout}}" }
             - { line: "\n---------------RAM------------------" }
             - { line: "\nTotal RAM : {{ram_total.stdout}}" }
-            - { line: "\nUsed RAM : {{ram_used.stdout}}" }
+#            - { line: "\nUsed RAM : {{ram_used.stdout}}" }
             - { line: "\nAvailable RAM : {{ram_available.stdout}}M" }
   - name: Write php
     lineinfile:
