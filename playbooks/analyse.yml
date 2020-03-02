@@ -34,10 +34,10 @@
     failed_when: false
     register: nginx
     tags: nginx
-#  - name: Return nginx
-#    shell: 'nginx -v'
-#    register: return_nginx
-#    tags: return_nginx
+  - name: Return nginx
+    shell: 'nginx -v'
+    register: return_nginx
+    tags: return_nginx
   - name: Check if apache is installed
     shell: 'dpkg -l | grep apache2'
     failed_when: false
